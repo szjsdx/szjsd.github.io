@@ -1,521 +1,733 @@
 <!DOCTYPE html>
- <html lang="zh-CN">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-     测测你的毛绒动物代表
-     <style>
-         * {
-             margin: 0;
-             padding: 0;
-             box-sizing: border-box;
-             font-family: "PingFang SC", "Microsoft Yahei", sans-serif;
-         }
-         body {
-             background-color: #f5f3f0;
-             color: #5a5754;
-             min-height: 100vh;
-             overflow-x: hidden;
-         }
-         /* 全局容器 */
-         .container {
-             width: 100%;
-             min-height: 100vh;
-             padding: 20px 16px;
-             max-width: 480px;
-             margin: 0 auto;
-         }
-         /* 标题样式 */
-         .top-title {
-             font-size: 20px;
-             font-weight: 600;
-             color: #7c7874;
-             text-align: center;
-             margin-bottom: 12px;
-             letter-spacing: 1px;
-         }
-         /* 封面页 */
-         .cover-page {
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-             justify-content: center;
-             min-height: 85vh;
-         }
-         .cover-desc {
-             font-size: 14px;
-             color: #94908c;
-             text-align: center;
-             line-height: 1.8;
-             margin: 20px 0 40px;
-             padding: 0 10px;
-         }
-         .start-btn {
-             background-color: #d8d2cb;
-             color: #66625e;
-             border: none;
-             border-radius: 30px;
-             padding: 14px 45px;
-             font-size: 15px;
-             font-weight: 500;
-             cursor: pointer;
-             transition: all 0.3s ease;
-         }
-         .start-btn:hover {
-             background-color: #c9c2ba;
-         }
-         /* 答题页面通用 */
-         .question-page {
-             display: none;
-             padding-top: 30px;
-         }
-         .q-num {
-             font-size: 13px;
-             color: #b4afa9;
-             margin-bottom: 8px;
-         }
-         .q-title {
-             font-size: 16px;
-             color: #635f5b;
-             line-height: 1.7;
-             margin-bottom: 30px;
-             font-weight: 500;
-         }
-         .option-list {
-             display: flex;
-             flex-direction: column;
-             gap: 14px;
-         }
-         .option-item {
-             background-color: #ede9e4;
-             border-radius: 16px;
-             padding: 16px;
-             font-size: 14px;
-             line-height: 1.6;
-             cursor: pointer;
-             transition: all 0.2s ease;
-             border: 2px solid transparent;
-         }
-         .option-item.active {
-             border-color: #c2b9b0;
-             background-color: #e5e0da;
-         }
-         .next-btn {
-             width: 100%;
-             background-color: #d8d2cb;
-             color: #66625e;
-             border: none;
-             border-radius: 30px;
-             padding: 13px;
-             font-size: 15px;
-             margin-top: 40px;
-             cursor: pointer;
-             display: none;
-         }
-         .next-btn.show {
-             display: block;
-         }
-         /* 结果页 */
-         .result-page {
-             display: none;
-             padding-top: 20px;
-         }
-         .result-animal {
-             font-size: 26px;
-             font-weight: 600;
-             text-align: center;
-             color: #7c7874;
-             margin: 20px 0;
-         }
-         .result-card {
-             background-color: #ede9e4;
-             border-radius: 20px;
-             padding: 22px;
-             margin: 20px 0;
-             line-height: 1.9;
-             font-size: 14px;
-             color: #5a5754;
-         }
-         .result-card h4 {
-             font-size: 15px;
-             margin: 12px 0 6px;
-             color: #6d6965;
-         }
-         .restart-btn {
-             width: 100%;
-             background-color: #c9c2ba;
-             color: #fff;
-             border: none;
-             border-radius: 30px;
-             padding: 13px;
-             font-size: 15px;
-             margin-top: 20px;
-             cursor: pointer;
-         }
-         /* 进度提示 */
-         .progress {
-             font-size: 12px;
-             color: #b4afa9;
-             text-align: right;
-             margin-bottom: 10px;
-         }
-     </style>
- </head>
- <body>
-     <div class="container">
-         <!-- 顶部固定标题 -->
-         <div class="top-title">测测你的毛绒动物代表|你最适配的毛绒挂件？</div>
-         <!-- 封面页 -->
-         <div class="cover-page" id="cover">
-             <p class="cover-desc">
-                 超准现实向性格测试✨<br>
-                 15道温柔小问题，解锁专属你的本命毛绒小动物<br>
-                 看看治愈你的灵魂挂件是什么！
-             </p>
-             <button class="start-btn" onclick="startTest()">开始测试</button>
-         </div>
-         <!-- 答题区域 -->
-         <div id="questionBox"></div>
-         <!-- 结果页 -->
-         <div class="result-page" id="resultPage">
-             <div class="result-animal" id="animalName"></div>
-             <div class="result-card" id="resultContent"></div>
-             <button class="restart-btn" onclick="restartTest()">重新测试</button>
-         </div>
-     </div>
-     <script>
-         // 所有题目 15题 4选项 现实向
-         const questions = [
-             {
-                 q: "1. 日常更喜欢的气候状态是？",
-                 options: ["干爽通透、阳光充足", "微凉多云、温柔无风", "温润潮湿、空气清新", "四季温润、不冷不热"]
-             },
-             {
-                 q: "2. 你的日常行动和做事节奏更偏向？",
-                 options: ["干脆利落，效率优先", "慢悠悠松弛，随心而来", "快慢结合，看心情切换", "谨慎缓慢，稳中求进"]
-             },
-             {
-                 q: "3. 美食偏好更贴近哪一种？",
-                 options: ["酥脆爽口类", "软糯香甜类", "清淡原味类", "温热暖胃类"]
-             },
-             {
-                 q: "4. 你能否接受潮湿闷热的天气？",
-                 options: ["完全不能，非常排斥", "轻微可以，久了难受", "基本适应，影响不大", "很喜欢潮湿温润感"]
-             },
-             {
-                 q: "5. 闲暇时间更喜欢的氛围？",
-                 options: ["热闹热闹、多人结伴", "小圈子温馨陪伴", "独处安静、自由自在", "动静皆宜、随机切换"]
-             },
-             {
-                 q: "6. 一年四季你最偏爱？",
-                 options: ["明媚春天", "清爽秋天", "温柔冬天", "热烈夏天"]
-             },
-             {
-                 q: "7. 和人相处时你的包容度是？",
-                 options: ["有底线，不迁就他人", ["适度包容，懂得换位思考"], ["温柔包容，很少计较"], ["极度包容，习惯性迁就"]]
-             },
-             {
-                 q: "8. 遇到烦心事你会？",
-                 options: ["快速消化，自我治愈", "悄悄emo，慢慢自愈", "找人倾诉，需要安慰", "搁置不管，顺其自然"]
-             },
-             {
-                 q: "9. 你的社交状态更接近？",
-                 options: ["外向主动，爱交朋友", "慢热被动，熟人开朗", "佛系社交，随缘相处", "偏爱独处，享受孤独"]
-             },
-             {
-                 q: "10. 面对新环境你的状态是？",
-                 options: ["快速适应，大胆尝试", "慢慢融入，谨慎观察", "略带拘谨，需要缓冲", "抗拒改变，偏爱熟悉"]
-             },
-             {
-                 q: "11. 你的性格底色更偏向？",
-                 options: ["活泼元气、阳光开朗", "温柔软糯、细腻敏感", "冷静沉稳、理智通透", "慵懒松弛、佛系淡然"]
-             },
-             {
-                 q: "12. 生活中你最需要的是？",
-                 options: ["自由无拘的生活", "安稳踏实的安全感", "温暖治愈的陪伴", "新鲜有趣的新鲜感"]
-             },
-             {
-                 q: "13. 面对他人的小麻烦你会？",
-                 options: ["量力帮忙，绝不内耗", "心软帮忙，偶尔内耗", "主动热心，乐于助人", "礼貌拒绝，专注自己"]
-             },
-             {
-                 q: "14. 你的情绪波动状态是？",
-                 options: ["情绪稳定，很少起伏", "轻微敏感，容易心软", "偶尔波动，来得快去得快", "细腻敏感，情绪丰富"]
-             },
-             {
-                 q: "15. 日常穿搭风格更偏向？",
-                 options: ["元气清爽、简约干净", "温柔软糯、柔和色系", "低调沉稳、简约大气", "慵懒休闲、松弛随性"]
-             }
-         ];
-         // 50个毛绒动物 专属小红书风格解读
-         const animalResult = [
-             {
-                 name: "软糯小白兔🐰",
-                 desc: "✨本命特质：温柔治愈、软萌心软\n💡适配性格：细腻敏感、待人温柔，天生自带治愈气场。你是身边人的小太阳，不争不抢，佛系温柔，很容易让人产生保护欲。\n🌟专属亮点：共情能力超强，懂得换位思考，软糯的性格特别讨喜，是所有人都舍不得伤害的小可爱。\n💬专属标签：人间软糖、治愈系小天使"
-             },
-             {
-                 name: "蓬松小猫咪🐱",
-                 desc: "✨本命特质：慵懒松弛、傲娇可爱\n💡适配性格：慢热佛系、随性自在，有点小傲娇但内心温柔。不喜欢勉强自己，主打一个松弛生活。\n🌟专属亮点：颜值气质在线，情绪自愈能力强，独处很快乐，相处很温柔，可盐可甜。\n💬专属标签：慵懒治愈、人间小傲娇"
-             },
-             {
-                 name: "奶乎乎小狗🐶",
-                 desc: "✨本命特质：阳光元气、真诚纯粹\n💡适配性格：开朗直白、待人真诚，心思简单没有弯弯绕绕，对世界永远抱有温柔和热情。\n🌟专属亮点：感染力超强，自带温暖气场，很会治愈身边的人，靠谱又暖心。\n💬专属标签：阳光小暖宝、真诚治愈系"
-             },
-             {
-                 name: "软乎乎小熊🐻",
-                 desc: "✨本命特质：安稳踏实、温柔敦厚\n💡适配性格：沉稳佛系、情绪稳定，不喜欢争吵，偏爱安稳平淡的生活，内心柔软善良。\n🌟专属亮点：超级有安全感，靠谱稳重，是朋友最信赖的依靠，温柔又有力量。\n💬专属标签：安稳治愈、温柔实力派"
-             },
-             {
-                 name: "圆滚滚小猪🐷",
-                 desc: "✨本命特质：佛系松弛、知足常乐\n💡适配性格：随性慵懒、不爱计较，心态超级好，主打开心第一，烦恼自动清零。\n🌟专属亮点：天生乐天派，情绪超稳定，软糯可爱，自带福气体质，人缘超好。\n💬专属标签：福气满满、佛系小甜豆"
-             },
-             {
-                 name: "温柔小鹿🦌",
-                 desc: "✨本命特质：细腻温柔、干净通透\n💡适配性格：干净纯粹、心思细腻，性格安静温柔，待人真诚，自带清冷温柔气质。\n🌟专属亮点：气质干净治愈，共情力极强，温柔且有分寸，让人觉得舒服又安心。\n💬专属标签：清冷温柔、人间月光"
-             },
-             {
-                 name: "呆萌小熊猫🐼",
-                 desc: "✨本命特质：可爱呆萌、佛系通透\n💡适配性格：慢热内敛、通透清醒，看着呆萌实则内心有数，不喜欢争抢，随遇而安。\n🌟专属亮点：自带反差萌，外表软萌内心沉稳，耐看又治愈，越相处越喜欢。\n💬专属标签：反差小可爱、佛系通透党"
-             },
-             {
-                 name: "软萌仓鼠🐹",
-                 desc: "✨本命特质：细腻谨慎、软糯乖巧\n💡适配性格：细心温柔、性格乖巧，做事谨慎认真，内心细腻敏感，偏爱安稳小世界。\n🌟专属亮点：心思细腻体贴，懂得珍惜美好，小小的身体大大的温柔，治愈感拉满。\n💬专属标签：细腻小温柔、乖巧治愈系"
-             },
-             {
-                 name: "温柔绵羊🐑",
-                 desc: "✨本命特质：温顺包容、善良柔软\n💡适配性格：极度温柔、包容度超高，不爱与人争执，习惯性体谅他人，心软又善良。\n🌟专属亮点：天生温柔菩萨性格，待人宽厚，情绪柔软，是朋友圈的治愈担当。\n💬专属标签：温柔天花板、心软小天使"
-             },
-             {
-                 name: "元气小狐狸🦊",
-                 desc: "✨本命特质：灵动聪慧、温柔俏皮\n💡适配性格：通透机灵、活泼灵动，性格开朗不呆板，情商超高，温柔又有分寸。\n🌟专属亮点：头脑清醒通透，待人温柔大方，灵动又治愈，氛围感满分。\n💬专属标签：灵动小机灵、温柔氛围感"
-             },
-             {
-                 name: "憨憨柯基🐾",
-                 desc: "✨本命特质：元气憨憨、治愈可爱\n💡适配性格：活泼开朗、心态乐观，性格直白真诚，有点小憨憨，永远元气满满。\n🌟专属亮点：自带快乐buff，感染力超强，简单纯粹，和你相处超级轻松治愈。\n💬专属标签：快乐制造机、憨憨小甜宝"
-             },
-             {
-                 name: "温柔垂耳兔🐰",
-                 desc: "✨本命特质：软糯敏感、温柔细腻\n💡适配性格：极度细腻温柔，内心敏感柔软，共情力满分，习惯性温柔对待世界。\n🌟专属亮点：温柔到骨子里，共情超强，懂得照顾他人情绪，是极致温柔的存在。\n💬专属标签：极致温柔、细腻治愈者"
-             },
-             {
-                 name: "慵懒布偶猫😺",
-                 desc: "✨本命特质：温柔松弛、颜值治愈\n💡适配性格：温柔佛系、气质温柔，情绪稳定松弛，不慌不忙，自带高级温柔感。\n🌟专属亮点：气质干净温柔，相处舒服无压力，松弛感拉满，越看越治愈。\n💬专属标签：松弛氛围感、温柔颜值党"
-             },
-             {
-                 name: "暖乎乎金毛🐶",
-                 desc: "✨本命特质：温暖治愈、善良靠谱\n💡适配性格：阳光温暖、真诚善良，待人包容大度，永远温柔热忱，超级靠谱。\n🌟专属亮点：人间小暖阳，治愈所有不开心，靠谱又温柔，是所有人的避风港。\n💬专属标签：人间暖阳、温柔靠谱王"
-             },
-             {
-                 name: "软糯小水獭🦦",
-                 desc: "✨本命特质：灵动软萌、乐观温柔\n💡适配性格：活泼软萌、心态超好，性格灵动可爱，永远对生活充满热爱与期待。\n🌟专属亮点：天生开心果，软萌治愈，自带温柔灵气，生活因为你变得更可爱。\n💬专属标签：灵气小宝贝、生活治愈家"
-             },
-             {
-                 name: "安静小松鼠🐿️",
-                 desc: "✨本命特质：细腻内敛、温柔认真\n💡适配性格：安静温柔、做事认真，性格内敛细腻，心思缜密，偏爱安稳简单的生活。\n🌟专属亮点：低调温柔、踏实认真，内心柔软善良，默默治愈身边的人。\n💬专属标签：内敛温柔、踏实小美好"
-             },
-             {
-                 name: "温柔小鹿犬🐕",
-                 desc: "✨本命特质：细腻通透、温柔灵动\n💡适配性格：细腻敏感、通透温柔，心思细腻观察力强，待人真诚温柔。\n🌟专属亮点：灵动又温柔，细节感满分，懂得珍惜温柔，气质干净又治愈。\n💬专属标签：细节温柔、干净小灵气"
-             },
-             {
-                 name: "圆滚滚熊猫崽🐼",
-                 desc: "✨本命特质：呆萌温柔、佛系可爱\n💡适配性格：佛系淡然、不爱计较，性格呆萌可爱，心态超好，随遇而安。\n🌟专属亮点：自带可爱滤镜，温柔佛系，不争不抢，天生自带福气与温柔。\n💬专属标签：佛系小可爱、福气治愈崽"
-             },
-             {
-                 name: "温柔白狐🦊",
-                 desc: "✨本命特质：干净清冷、温柔通透\n💡适配性格：气质清冷干净，内心通透温柔，待人有分寸，温柔且独立。\n🌟专属亮点：清冷又温柔，独立又柔软，气质独特治愈，自带高级氛围感。\n💬专属标签：清冷月光、温柔独立派"
-             },
-             {
-                 name: "软萌企鹅🐧",
-                 desc: "✨本命特质：憨厚可爱、温柔专一\n💡适配性格：憨厚温柔、性格专一，待人真诚稳重，生活踏实安稳，软糯可爱。\n🌟专属亮点：踏实靠谱、温柔专一，外表呆萌内心温柔，治愈又安心。\n💬专属标签：踏实小可爱、温柔专一党"
-             },
-             {
-                 name: "温柔小羊羔🐑",
-                 desc: "✨本命特质：极致软糯、善良温柔\n💡适配性格：性格软糯温柔，心软善良，包容度极高，永远温柔待人。\n🌟专属亮点：温柔天花板，没有攻击性，软糯治愈，让人忍不住偏爱。\n💬专属标签：人间软糖、温柔小羔羊"
-             },
-             {
-                 name: "元气小棕熊🐻",
-                 desc: "✨本命特质：温暖憨厚、踏实治愈\n💡适配性格：憨厚温柔、踏实稳重，情绪稳定，待人真诚温暖，超级有安全感。\n🌟专属亮点：温柔有力量，踏实靠谱，治愈又安稳，是最温暖的依靠。\n💬专属标签：温暖实力派、安稳治愈家"
-             },
-             {
-                 name: "灵动小鹦鹉🦜",
-                 desc: "✨本命特质：活泼灵动、温柔开朗\n💡适配性格：开朗乐观、灵动可爱，性格外向温柔，热爱生活，氛围感超强。\n🌟专属亮点：自带快乐气场，活泼治愈，能带动身边人的情绪，温暖又明媚。\n💬专属标签：明媚小太阳、氛围制造机"
-             },
-             {
-                 name: "温柔垂耳绵羊🐑",
-                 desc: "✨本命特质：温柔包容、细腻心软\n💡适配性格：细腻心软、极度包容，习惯性体谅他人，温柔且善良。\n🌟专属亮点：共情力满分，温柔无棱角，治愈所有疲惫，是温柔本身。\n💬专属标签：温柔无棱角、治愈心软派"
-             },
-             {
-                 name: "呆萌海狮🦭",
-                 desc: "✨本命特质：憨厚松弛、软萌治愈\n💡适配性格：松弛佛系、呆萌可爱，心态乐观，不爱纠结，生活松弛自在。\n🌟专属亮点：松弛感天花板，软萌憨厚，相处轻松治愈，烦恼通通消散。\n💬专属标签：松弛小宝贝、呆萌治愈系"
-             },
-             {
-                 name: "温柔布偶小兔🐰",
-                 desc: "✨本命特质：精致温柔、细腻浪漫\n💡适配性格：细腻浪漫、温柔精致，内心柔软敏感，热爱生活所有美好。\n🌟专属亮点：温柔浪漫氛围感拉满，细腻治愈，自带温柔滤镜。\n💬专属标签：浪漫温柔、精致小美好"
-             },
-             {
-                 name: "慵懒橘猫🐱",
-                 desc: "✨本命特质：佛系慵懒、自在温柔\n💡适配性格：随心自在、佛系淡然，不爱内卷，主打松弛快乐，情绪稳定。\n🌟专属亮点：人间松弛天花板，慵懒可爱，自愈能力超强，活得通透自在。\n💬专属标签：佛系躺平、自在小橘宝"
-             },
-             {
-                 name: "温柔萨摩耶🐶",
-                 desc: "✨本命特质：纯白治愈、温柔阳光\n💡适配性格：阳光纯白、温柔热忱，待人真诚善良，永远温暖纯粹。\n🌟专属亮点：人间纯白小暖阳，干净治愈，笑容温柔，治愈所有负面情绪。\n💬专属标签：纯白治愈、阳光小天使"
-             },
-             {
-                 name: "细腻小貂🦝",
-                 desc: "✨本命特质：灵动细腻、温柔通透\n💡适配性格：细腻机灵、通透温柔，观察力超强，待人温柔有分寸。\n🌟专属亮点：灵动细腻、情商在线，温柔又清醒，相处舒服又治愈。\n💬专属标签：清醒温柔、灵动小细腻"
-             },
-             {
-                 name: "圆滚滚海豹🦭",
-                 desc: "✨本命特质：软萌憨厚、知足快乐\n💡适配性格：憨厚可爱、心态超好，知足常乐，简单纯粹，快乐很简单。\n🌟专属亮点：软萌度满分，无忧无虑，自带福气，是治愈系小开心果。\n💬专属标签：简单快乐、福气小萌娃"
-             },
-             {
-                 name: "温柔长耳兔🐇",
-                 desc: "✨本命特质：细腻敏感、温柔坚定\n💡适配性格：细腻温柔、内心坚定，看似柔软实则有底线，温柔且独立。\n🌟专属亮点：柔中带刚，温柔又清醒，细腻治愈，拥有独属于自己的温柔力量。\n💬专属标签：柔中带刚、温柔独立者"
-             },
-             {
-                 name: "元气柴犬🐕",
-                 desc: "✨本命特质：元气倔强、温柔可爱\n💡适配性格：元气开朗、性格纯粹，有点小倔强，内心温柔善良，永远积极向上。\n🌟专属亮点：阳光元气满满，治愈又鲜活，自带正能量，感染力超强。\n💬专属标签：正能量小太阳、鲜活小可爱"
-             },
-             {
-                 name: "温柔龙猫🐾",
-                 desc: "✨本命特质：静谧温柔、治愈恬淡\n💡适配性格：恬淡安静、温柔佛系，偏爱安静生活，内心平和温柔。\n🌟专属亮点：自带静谧治愈气场，安静美好，抚平焦虑，让人内心安稳平静。\n💬专属标签：静谧治愈、平和小美好"
-             },
-             {
-                 name: "软萌豚鼠🐹",
-                 desc: "✨本命特质：乖巧软糯、温柔可爱\n💡适配性格：乖巧温柔、性格软萌，心思单纯，待人友善，生活简单美好。\n🌟专属亮点：软糯乖巧，毫无攻击性，简单纯粹，是最治愈的小美好。\n💬专属标签：单纯小美好、软糯乖乖宝"
-             },
-             {
-                 name: "温柔白马🐴",
-                 desc: "✨本命特质：干净洒脱、温柔自由\n💡适配性格：干净洒脱、向往自由，内心温柔纯粹，独立且温柔。\n🌟专属亮点：自由且温柔，干净通透，自带仙气氛围感，治愈又洒脱。\n💬专属标签：自由温柔、干净仙气派"
-             },
-             {
-                 name: "灵动小鹿崽🦌",
-                 desc: "✨本命特质：青涩温柔、干净纯粹\n💡适配性格：青涩干净、温柔细腻，内心纯粹柔软，对世界充满善意。\n🌟专属亮点：青涩治愈、干净通透，自带少年温柔感，干净又美好。\n💬专属标签：青涩温柔、纯粹小月光"
-             },
-             {
-                 name: "慵懒波斯猫🐱",
-                 desc: "✨本命特质：优雅松弛、温柔高贵\n💡适配性格：优雅温柔、松弛淡然，气质温柔高级，生活随性自在。\n🌟专属亮点：温柔优雅氛围感拉满，松弛有度，耐看又治愈。\n💬专属标签：优雅温柔、松弛氛围感"
-             },
-             {
-                 name: "温柔边牧🐶",
-                 desc: "✨本命特质：聪慧温柔、靠谱通透\n💡适配性格：聪慧通透、温柔靠谱，心思清醒，待人真诚，做事稳重。\n🌟专属亮点：聪明且温柔，靠谱又治愈，清醒温柔，是绝佳的治愈伙伴。\n💬专属标签：聪慧温柔、靠谱实力派"
-             },
-             {
-                 name: "软萌考拉🐨",
-                 desc: "✨本命特质：慵懒温柔、安稳佛系\n💡适配性格：慵懒佛系、偏爱安稳，性格温柔安静，不爱奔波，知足常乐。\n🌟专属亮点：超级安稳治愈，慵懒可爱，自带安稳气场，抚平所有浮躁。\n💬专属标签：安稳治愈、慵懒小温柔"
-             },
-             {
-                 name: "温柔小天马🦄",
-                 desc: "✨本命特质：浪漫温柔、纯粹美好\n💡适配性格：浪漫细腻、内心纯粹，热爱美好，温柔善良，自带少女温柔感。\n🌟专属亮点：浪漫治愈、温柔梦幻，永远相信美好，是人间浪漫小天使。\n💬专属标签：浪漫梦幻、纯粹温柔派"
-             },
-             {
-                 name: "呆萌小河马🦛",
-                 desc: "✨本命特质：憨厚温柔、佛系暖心\n💡适配性格：憨厚佛系、内心温暖，不爱计较，待人宽厚，简单真诚。\n🌟专属亮点：憨厚可爱、温柔暖心，包容度超高，相处超级舒服。\n💬专属标签：宽厚温柔、佛系小暖宝"
-             },
-             {
-                 name: "温柔小驯鹿🦌",
-                 desc: "✨本命特质：温暖治愈、温柔善良\n💡适配性格：温暖热忱、善良温柔，自带冬日治愈感，待人温柔赤诚。\n🌟专属亮点：冬日专属治愈感，温柔暖心，治愈所有寒冷与疲惫。\n💬专属标签：冬日暖阳、温柔赤诚者"
-             },
-             {
-                 name: "灵动小狐狸崽🦊",
-                 desc: "✨本命特质：俏皮温柔、灵动可爱\n💡适配性格：俏皮灵动、温柔开朗，性格鲜活可爱，情商高懂分寸。\n🌟专属亮点：鲜活治愈、俏皮温柔，氛围感超强，越相处越有魅力。\n💬专属标签：俏皮灵动、温柔氛围感"
-             },
-             {
-                 name: "软糯小奶熊🐻",
-                 desc: "✨本命特质：奶萌温柔、纯粹柔软\n💡适配性格：奶萌软糯、内心纯粹，温柔柔软，毫无攻击性，超级治愈。\n🌟专属亮点：奶感治愈拉满，柔软温柔，是所有人都想守护的小温柔。\n💬专属标签：奶萌软糖、纯粹小温柔"
-             },
-             {
-                 name: "安静小猫咪🐱",
-                 desc: "✨本命特质：静谧温柔、独立自愈\n💡适配性格：安静内敛、独立温柔，擅长自我治愈，独处自在温柔。\n🌟专属亮点：安静美好、温柔自愈，内心强大柔软，静谧又治愈。\n💬专属标签：静谧自愈、温柔独立猫"
-             },
-             {
-                 name: "元气小山羊🐐",
-                 desc: "✨本命特质：灵动温柔、积极向上\n💡适配性格：灵动开朗、温柔坚韧，积极乐观，永远对生活充满热情。\n🌟专属亮点：坚韧温柔、元气满满，自带正能量，治愈又鲜活。\n💬专属标签：坚韧温柔、元气向上派"
-             },
-             {
-                 name: "温柔水豚🦫",
-                 desc: "✨本命特质：顶级佛系、温柔包容\n💡适配性格：极致佛系、包容万物，情绪超级稳定，万事顺其自然。\n🌟专属亮点：全网最治愈佛系体质，温柔松弛，治愈所有焦虑内耗。\n💬专属标签：佛系天花板、焦虑终结者"
-             },
-             {
-                 name: "软萌小白熊🐻‍❄️",
-                 desc: "✨本命特质：纯白温柔、干净治愈\n💡适配性格：干净纯粹、温柔赤诚，内心柔软善良，自带清冷温柔感。\n🌟专属亮点：纯白治愈、干净温柔，像冬日白雪一样干净治愈。\n💬专属标签：纯白月光、干净治愈者"
-             },
-             {
-                 name: "灵动小燕子🕊️",
-                 desc: "✨本命特质：轻盈温柔、明媚鲜活\n💡适配性格：明媚鲜活、温柔灵动，性格开朗轻盈，热爱自由与美好。\n🌟专属亮点：轻盈治愈、明媚温柔，自带春日氛围感，鲜活又美好。\n💬专属标签：春日明媚、轻盈温柔派"
-             },
-             {
-                 name: "温柔小鹿羊🦌🐑",
-                 desc: "✨本命特质：双重温柔、细腻治愈\n💡适配性格：兼具灵动与温柔，细腻善良，共情力极强，温柔通透。\n🌟专属亮点：双倍温柔治愈，细腻通透，是人间最温柔的治愈宝藏。\n💬专属标签：双倍温柔、终极治愈者"
-             }
-         ];
-         let currentQ = 0;
-         let scoreArr = [];
-         // 开始测试
-         function startTest() {
-             document.getElementById("cover").style.display = "none";
-             renderQuestion();
-         }
-        // 渲染题目
-         function renderQuestion() {
-             const box = document.getElementById("questionBox");
-             const q = questions[currentQ];
-             box.innerHTML = `
-                 <div class="question-page" style="display:block">
-                     <div class="progress">${currentQ+1}/15</div>
-                     <div class="q-num">性格小测试</div>
-                     <div class="q-title">${q.q}</div>
-                     <div class="option-list">
-                         ${q.options.map((item,idx)=>`<div class="option-item" data-score="${idx}" onclick="selectOpt(this)">${item}</div>`).join("")}
-                     </div>
-                     <button class="next-btn" id="nextBtn">下一题</button>
-                 </div>
-             `;
-         }
-         // 选择选项
-         function selectOpt(dom) {
-             // 清空选中
-             document.querySelectorAll(".option-item").forEach(el=>el.classList.remove("active"));
-             // 添加选中
-             dom.classList.add("active");
-             // 显示下一题
-             document.getElementById("nextBtn").classList.add("show");
-             // 记录分数
-             scoreArr[currentQ] = parseInt(dom.dataset.score);
-         }
-         // 下一题
-         document.addEventListener("click",function(e){
-             if(e.target.id === "nextBtn"){
-                 currentQ++;
-                 if(currentQ < 15){
-                     renderQuestion();
-                 }else{
-                     getResult();
-                 }
-             }
-         })
-         // 计算结果
-         function getResult() {
-             // 计算总分
-             let total = scoreArr.reduce((a,b)=>a+b,0);
-             // 0-45分 对应50个结果均分
-             let index = Math.floor(total / (46/50));
-             index = Math.min(index,49);
-             let res = animalResult[index];
-             // 隐藏答题页 显示结果页
-             document.getElementById("questionBox").style.display = "none";
-             document.getElementById("resultPage").style.display = "block";
-             document.getElementById("animalName").innerText = res.name;
-             document.getElementById("resultContent").innerText = res.desc;
-         }
-         // 重新测试
-         function restartTest() {
-             currentQ = 0;
-             scoreArr = [];
-             document.getElementById("resultPage").style.display = "none";
-             document.getElementById("cover").style.display = "flex";
-         }
-     </script>
- </body>
- </html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>测测你的毛绒动物代表 · 毛绒挂件</title>
+  <style>
+	/* 莫兰迪浅色系 · 小红书可爱漫画风 */
+	* {
+	  margin: 0;
+	  padding: 0;
+	  box-sizing: border-box;
+	  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+	}
+
+	body {
+	  background-color: #F5F0EA;  /* 暖灰米白基底 */
+	  display: flex;
+	  justify-content: center;
+	  align-items: flex-start;
+	  min-height: 100vh;
+	  padding: 16px 12px 32px;
+	  color: #5C534B; /* 柔和深灰褐 */
+	}
+
+	/* 主卡片 – 圆润漫画感 */
+	.app-card {
+	  max-width: 480px;
+	  width: 100%;
+	  background: #FFFFFFF2;  /* 半透白，柔和 */
+	  backdrop-filter: blur(2px);
+	  border-radius: 40px 40px 32px 32px;
+	  box-shadow: 0 12px 28px rgba(160, 140, 120, 0.12), 0 4px 12px rgba(190, 170, 150, 0.1);
+	  padding: 28px 22px 32px;
+	  border: 1.5px solid #F0E4D8;
+	  transition: all 0.15s ease;
+	}
+
+	/* 顶部标题区 */
+	.header {
+	  text-align: center;
+	  margin-bottom: 24px;
+	}
+
+	.header h1 {
+	  font-size: 1.8rem;
+	  font-weight: 600;
+	  letter-spacing: -0.5px;
+	  line-height: 1.3;
+	  color: #7A6A5C;
+	  text-shadow: 0 2px 4px rgba(255, 240, 230, 0.8);
+	  background: linear-gradient(145deg, #7A6A5C, #9A8A7C);
+	  -webkit-background-clip: text;
+	  background-clip: text;
+	  -webkit-text-fill-color: transparent;
+	  margin-bottom: 8px;
+	}
+
+	.header .subhead {
+	  font-size: 0.9rem;
+	  color: #A79383;
+	  background: #F8EFE8;
+	  display: inline-block;
+	  padding: 6px 20px;
+	  border-radius: 40px;
+	  letter-spacing: 0.5px;
+	  font-weight: 400;
+	  border: 1px dashed #DBCFC4;
+	}
+
+	/* 封面导语 */
+	.intro-text {
+	  font-size: 0.95rem;
+	  color: #7C6E62;
+	  text-align: center;
+	  margin-bottom: 28px;
+	  padding: 0 10px;
+	  line-height: 1.55;
+	  background: #FDF8F4;
+	  border-radius: 24px;
+	  padding: 16px 18px;
+	  border: 1px solid #F2E8E0;
+	}
+
+	/* 答题区 */
+	.quiz-area {
+	  transition: opacity 0.2s;
+	}
+
+	.question-counter {
+	  font-size: 0.85rem;
+	  color: #B9A99A;
+	  margin-bottom: 12px;
+	  letter-spacing: 0.3px;
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: center;
+	}
+
+	.question-counter span:first-child {
+	  background: #EAE0D7;
+	  padding: 4px 12px;
+	  border-radius: 30px;
+	  color: #6D5E51;
+	  font-weight: 500;
+	  font-size: 0.8rem;
+	}
+
+	.question-text {
+	  font-size: 1.35rem;
+	  font-weight: 600;
+	  line-height: 1.4;
+	  color: #5C534B;
+	  margin-bottom: 24px;
+	  padding-left: 6px;
+	  letter-spacing: -0.2px;
+	  border-left: 5px solid #DBCFC4;
+	  padding-left: 14px;
+	}
+
+	.options-list {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 12px;
+	  margin-bottom: 30px;
+	}
+
+	/* 选项卡片 – 漫画按钮感 */
+	.option-btn {
+	  background: #FCF9F6;
+	  border: 1.5px solid #EADFD5;
+	  border-radius: 26px;
+	  padding: 16px 20px;
+	  font-size: 1rem;
+	  color: #62574E;
+	  text-align: left;
+	  font-weight: 450;
+	  line-height: 1.4;
+	  transition: all 0.1s ease;
+	  box-shadow: 0 2px 0 #E6D9CE;
+	  cursor: pointer;
+	  outline: none;
+	  -webkit-tap-highlight-color: transparent;
+	  display: flex;
+	  align-items: center;
+	  gap: 12px;
+	}
+
+	.option-btn:active {
+	  transform: scale(0.98);
+	  background: #F5EDE6;
+	  border-color: #DBCFC4;
+	  box-shadow: 0 1px 0 #E6D9CE;
+	}
+
+	.option-btn.selected {
+	  background: #F2E8DF;
+	  border-color: #BFAF9F;
+	  box-shadow: 0 2px 0 #CBBBA9;
+	  color: #4A4038;
+	  font-weight: 500;
+	}
+
+	/* 小装饰圆点，漫画感 */
+	.option-dot {
+	  width: 20px;
+	  height: 20px;
+	  border-radius: 50%;
+	  background: #F3E9E1;
+	  border: 1.5px solid #D6C8BB;
+	  flex-shrink: 0;
+	  transition: all 0.1s;
+	}
+
+	.option-btn.selected .option-dot {
+	  background: #CBBBA9;
+	  border-color: #9E8B7A;
+	}
+
+	/* 下一题按钮 */
+	.next-btn {
+	  background: #D6C8BB;
+	  border: none;
+	  border-radius: 50px;
+	  padding: 18px 24px;
+	  width: 100%;
+	  font-size: 1.15rem;
+	  font-weight: 550;
+	  color: #FFFFFF;
+	  letter-spacing: 0.8px;
+	  box-shadow: 0 4px 0 #B8A797;
+	  transition: all 0.1s ease;
+	  cursor: pointer;
+	  -webkit-tap-highlight-color: transparent;
+	  margin-top: 6px;
+	  border: 1px solid #EADFD5;
+	}
+
+	.next-btn:active {
+	  transform: translateY(2px);
+	  box-shadow: 0 2px 0 #B8A797;
+	}
+
+	.next-btn:disabled {
+	  opacity: 0.4;
+	  transform: translateY(0);
+	  box-shadow: 0 4px 0 #B8A797;
+	  pointer-events: none;
+	}
+
+	/* 结果页 */
+	.result-area {
+	  display: none;
+	  opacity: 0;
+	  transition: opacity 0.2s;
+	}
+
+	.result-area.active {
+	  display: block;
+	  opacity: 1;
+	}
+
+	.quiz-area.hidden {
+	  display: none;
+	}
+
+	/* 毛绒动物展示卡片 */
+	.animal-card {
+	  background: #FEFCFA;
+	  border-radius: 40px;
+	  padding: 22px 18px 24px;
+	  margin-bottom: 28px;
+	  border: 2px solid #F1E7DF;
+	  box-shadow: 0 8px 18px rgba(180, 160, 140, 0.08);
+	  text-align: center;
+	}
+
+	.animal-emoji {
+	  font-size: 7rem;
+	  line-height: 1.1;
+	  margin: 6px 0 8px;
+	  filter: drop-shadow(0 8px 10px rgba(160, 140, 120, 0.18));
+	  transform: scale(1.05);
+	  display: inline-block;
+	}
+
+	.animal-name {
+	  font-size: 2rem;
+	  font-weight: 700;
+	  color: #6D5E51;
+	  letter-spacing: -0.5px;
+	  background: #F8EFE8;
+	  display: inline-block;
+	  padding: 4px 24px;
+	  border-radius: 60px;
+	  margin-bottom: 16px;
+	  border: 1px dashed #DBCFC4;
+	}
+
+	.animal-desc {
+	  background: #FDF8F4;
+	  border-radius: 28px;
+	  padding: 20px 18px;
+	  font-size: 0.98rem;
+	  line-height: 1.65;
+	  color: #62574E;
+	  text-align: left;
+	  border: 1px solid #F2E8E0;
+	  box-shadow: inset 0 1px 4px #FFF9F5;
+	}
+
+	.animal-desc p {
+	  margin-bottom: 14px;
+	}
+
+	.animal-desc p:last-child {
+	  margin-bottom: 0;
+	}
+
+	.animal-desc .highlight {
+	  background: #F3E9E1;
+	  display: inline-block;
+	  padding: 2px 12px;
+	  border-radius: 24px;
+	  font-weight: 500;
+	  color: #5C4D40;
+	  font-size: 0.9rem;
+	  margin-right: 6px;
+	  margin-bottom: 6px;
+	  border: 0.5px solid #E2D4C8;
+	}
+
+	.desc-label {
+	  font-weight: 600;
+	  color: #8A7A6C;
+	  font-size: 0.9rem;
+	  letter-spacing: 0.3px;
+	  margin-right: 8px;
+	  background: #F5EDE6;
+	  padding: 2px 10px;
+	  border-radius: 20px;
+	  display: inline-block;
+	  margin-bottom: 6px;
+	}
+
+	/* 重新测试按钮 */
+	.retest-btn {
+	  background: #FFFFFF;
+	  border: 1.8px solid #D6C8BB;
+	  border-radius: 50px;
+	  padding: 16px 24px;
+	  width: 100%;
+	  font-size: 1.1rem;
+	  font-weight: 500;
+	  color: #7A6A5C;
+	  letter-spacing: 0.5px;
+	  transition: all 0.1s ease;
+	  cursor: pointer;
+	  -webkit-tap-highlight-color: transparent;
+	  box-shadow: 0 3px 0 #F0E4D8;
+	  margin-top: 8px;
+	}
+
+	.retest-btn:active {
+	  transform: translateY(2px);
+	  box-shadow: 0 1px 0 #F0E4D8;
+	  background: #FCF9F6;
+	}
+
+	/* 可爱的分割小装饰 */
+	.cute-divider {
+	  display: flex;
+	  justify-content: center;
+	  gap: 8px;
+	  margin: 8px 0 6px;
+	  opacity: 0.5;
+	}
+
+	.cute-divider span {
+	  width: 6px;
+	  height: 6px;
+	  background: #DBCFC4;
+	  border-radius: 10px;
+	}
+
+	.cute-divider span:nth-child(2) {
+	  width: 20px;
+	  background: #CBBBA9;
+	}
+
+	/* 隐藏辅助 */
+	.hidden {
+	  display: none !important;
+	}
+
+	/* 适配小屏 */
+	@media (max-width: 380px) {
+	  .app-card { padding: 20px 16px 24px; }
+	  .question-text { font-size: 1.2rem; }
+	  .option-btn { padding: 14px 16px; font-size: 0.95rem; }
+	  .animal-emoji { font-size: 5.5rem; }
+	}
+  </style>
+</head>
+<body>
+  <div class="app-card" id="appCard">
+	<!-- 标题区 (一直显示，但结果页也会保留) -->
+	<div class="header">
+	  <h1>测测你的毛绒动物代表</h1>
+	  <div class="subhead">你最适配的毛绒挂件?</div>
+	</div>
+
+	<!-- 封面导语 (答题开始时显示，结果页隐藏) -->
+	<div class="intro-text" id="introText">
+	  🧸 15道生活小题，温柔探测你的性格底色<br>
+	  从气候偏好到美食节奏，从热闹到安静……<br>
+	  做完就能遇见你的毛绒动物分身✨
+	</div>
+
+	<!-- 答题区 -->
+	<div class="quiz-area" id="quizArea">
+	  <div class="question-counter">
+		<span id="qIndexDisplay">1 / 15</span>
+		<span>🐾 慢慢选</span>
+	  </div>
+	  <div class="question-text" id="questionText"></div>
+	  <div class="options-list" id="optionsList"></div>
+	  <button class="next-btn" id="nextBtn" disabled>下一题 →</button>
+	</div>
+
+	<!-- 结果区 -->
+	<div class="result-area" id="resultArea">
+	  <div class="animal-card">
+		<div class="animal-emoji" id="animalEmoji">🐻</div>
+		<div class="animal-name" id="animalName">毛绒小熊</div>
+		<div class="animal-desc" id="animalDesc"></div>
+	  </div>
+	  <button class="retest-btn" id="retestBtn">🔄 重新测试</button>
+	</div>
+  </div>
+
+  <script>
+	(function() {
+	  // ---------- 题目数据 ----------
+	  // 每道题4个选项，选项分值 (用于计算动物匹配，完全不用玄学，采用向量相似度)
+	  // 为了生成50种动物，定义每个动物的“偏好向量”维度为15 (每题选一个倾向)
+	  // 但为了简单和趣味，我们采用另一种方式：每道题每个选项对应1-4分，累计总分映射到动物区间。
+	  // 更简单且可靠：总分范围15~60分，然后根据总分映射到50种动物 (每个动物对应一个分数段)。
+	  // 但为了让50种动物更丰富，我们可以用总分 + 次维度 (如选项组合特征)。但为了保持简单，就用总分映射50个动物，每个动物区间宽度约0.9分，基本每个分数都有不同动物。
+	  // 不过只靠总分的话，50个动物会重复出现。为了让结果更细腻，额外加入第二维度（例如潮湿接受度、热闹偏好等加权）。但保持干净，我们使用“总分+第二特征分”的方式决定动物。
+	  // 更简单且保证50种动物均有机会：将总分15-60映射到50个区间，但会有很多分数重叠。实际用户只能得15-60共46种总分，50个动物会有4个动物无法被覆盖。所以采用另一种方式：通过5个维度综合。
+	  // 但为了确保50个动物都能出现，采用累计选项分数并加上随机微调? 不能随机，必须确定。
+	  // 最终采用：每道题选项隐含一个“特征码”，最后计算出一个哈希值落在1~50之间。这样每个动物都有机会。
+	  // 但为了合理，将每个选项赋予一个小质数，然后相加再取模50。这很公平，且不是玄学，只是分散映射。
+	  // 但用户完全无法预测，也很有趣。好，就用质数映射法，保证50个动物均等出现，且与题目选择强相关。
+	  
+	  // 为每道题的每个选项分配一个独特的质数权重，然后累计总和取模50，得到动物索引(0-49)。
+	  // 质数表：2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71... 足够
+	  // 为每个选项分配一个质数，确保每个选项不同。因为15题*4=60个选项，使用60个不同质数。
+	  const primes = [
+		2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+		73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+		179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281
+	  ];
+
+	  // 题目列表 (15题，贴近生活)
+	  const questions = [
+		{
+		  text: "你更喜欢哪种气候？",
+		  options: ["温暖干燥，阳光满满", "凉爽微风，四季分明", "湿润多雨，植物茂盛", "寒冷清冽，偶有飘雪"]
+		},
+		{
+		  text: "早上起床后，你通常会？",
+		  options: ["慢慢悠悠，先发会儿呆", "立刻起身，效率第一", "听点音乐，缓冲情绪", "赖床到最后一刻"]
+		},
+		{
+		  text: "朋友约你周末出去玩，你更倾向？",
+		  options: ["去热闹的市集逛逛", "找家安静咖啡馆聊天", "户外徒步或野餐", "宅家一起看电影"]
+		},
+		{
+		  text: "面对潮湿的天气，你的感受是？",
+		  options: ["完全不能接受，心情低落", "还行，但更喜欢干爽", "挺舒服的，皮肤不干", "无所谓，下雨更有氛围"]
+		},
+		{
+		  text: "你最喜欢哪种口味的食物？",
+		  options: ["浓郁芝士或奶油", "清爽酸甜的果味", "咸香酥脆的炸物", "温和清淡的粥汤"]
+		},
+		{
+		  text: "来到一个陌生的聚会，你会？",
+		  options: ["主动打招呼，很快融入", "先观察，找到舒服的人再聊", "和认识的人待在一起", "享受安静，偶尔说两句"]
+		},
+		{
+		  text: "你更偏爱哪个季节？",
+		  options: ["春天，万物复苏", "夏天，热烈明亮", "秋天，温柔凉爽", "冬天，安静内敛"]
+		},
+		{
+		  text: "你的动作节奏通常是？",
+		  options: ["慢条斯理，不着急", "轻快敏捷，效率高", "随心情，时快时慢", "稳扎稳打，按部就班"]
+		},
+		{
+		  text: "如果养植物，你会选择？",
+		  options: ["多肉，好养又可爱", "绿萝，生命力强", "开花植物，赏心悦目", "不养植物，怕麻烦"]
+		},
+		{
+		  text: "你希望朋友怎么评价你？",
+		  options: ["温暖贴心，像小太阳", "有趣幽默，气氛担当", "靠谱沉稳，值得信赖", "独立自由，有边界感"]
+		},
+		{
+		  text: "假期你更想去哪里？",
+		  options: ["海边度假，吹风吃冰", "山林民宿，听鸟叫", "城市探索，逛吃逛吃", "家里蹲，追剧打游戏"]
+		},
+		{
+		  text: "对味道的敏感度？",
+		  options: ["对气味很敏感，喜欢清新", "喜欢淡淡的花果香", "偏爱木质调或暖香", "不太在意气味"]
+		},
+		{
+		  text: "你更喜欢哪种触感的毛绒？",
+		  options: ["软绵绵长毛，超好rua", "短毛顺滑，干净利落", "颗粒绒，有肌理感", "不挑，可爱就行"]
+		},
+		{
+		  text: "遇到压力时，你通常会？",
+		  options: ["找朋友倾诉，需要陪伴", "自己安静待着消化", "运动或做手工转移", "睡一觉就好"]
+		},
+		{
+		  text: "你更接受的社交节奏是？",
+		  options: ["热闹聚会，能量满满", "三两好友，深度聊天", "线上聊天，偶尔见面", "独处最舒服，社交少量"]
+		}
+	  ];
+
+	  // 为每个题目选项预分配质数索引 (0-59依次)
+	  // 全局选项计数
+	  let primeIndex = 0;
+	  const questionOptionPrimes = questions.map((q, qi) => {
+		return q.options.map((opt, oi) => {
+		  const p = primes[primeIndex % primes.length];
+		  primeIndex++;
+		  return p;
+		});
+	  });
+
+	  // ---------- 50种毛绒动物数据 ----------
+	  // 每个动物有名字、emoji、解读文案（小红书风格：亮点、适合性格、特点）
+	  // 文案要求温柔接地气，适合截图。
+	  const animals = [
+		{ name: "奶油小熊", emoji: "🧸", desc: "软乎乎的奶油小熊，看起来就很好抱。<br><span class='desc-label'>✨亮点</span> 无攻击性的温暖，总是默默陪伴。<br><span class='desc-label'>👭适合</span> 内心柔软、喜欢照顾别人的你。<br><span class='desc-label'>🌟特点</span> 慢热但长情，是朋友里的治愈担当。" },
+		{ name: "棉花小兔", emoji: "🐇", desc: "耳朵长长的小白兔，蹦蹦跳跳带着甜。<br><span class='desc-label'>✨亮点</span> 永远保持好奇心，天真又机灵。<br><span class='desc-label'>👭适合</span> 活泼中带点小敏感的你。<br><span class='desc-label'>🌟特点</span> 喜欢被温柔对待，也会温柔对人。" },
+		{ name: "懒蛋小猫", emoji: "🐱", desc: "阳光下打盹的橘猫，懒洋洋但治愈。<br><span class='desc-label'>✨亮点</span> 随遇而安，把日子过成诗。<br><span class='desc-label'>👭适合</span> 喜欢慢节奏、享受独处的你。<br><span class='desc-label'>🌟特点</span> 不争不抢，但有自己的小世界。" },
+		{ name: "卷毛小羊", emoji: "🐑", desc: "一身卷毛软绵绵，咩咩叫像云朵。<br><span class='desc-label'>✨亮点</span> 包容力超强，很少发脾气。<br><span class='desc-label'>👭适合</span> 性格温和、不喜欢冲突的你。<br><span class='desc-label'>🌟特点</span> 容易心软，是倾听者的角色。" },
+		{ name: "圆脸仓鼠", emoji: "🐹", desc: "腮帮子鼓鼓的小仓鼠，囤积快乐。<br><span class='desc-label'>✨亮点</span> 小身体大能量，把生活塞满小确幸。<br><span class='desc-label'>👭适合</span> 喜欢收集小物件、容易满足的你。<br><span class='desc-label'>🌟特点</span> 有点宅，但特别有生活情趣。" },
+		{ name: "呆萌小鹿", emoji: "🦌", desc: "眼睛湿漉漉的小鹿，温柔又警觉。<br><span class='desc-label'>✨亮点</span> 细腻敏感，能察觉别人的情绪。<br><span class='desc-label'>👭适合</span> 善解人意、内心丰富的你。<br><span class='desc-label'>🌟特点</span> 需要安全距离，但一旦信任就很真。" },
+		{ name: "蓬松狐狸", emoji: "🦊", desc: "大尾巴的赤狐，聪明又带点俏皮。<br><span class='desc-label'>✨亮点</span> 幽默有梗，总能让人开心。<br><span class='desc-label'>👭适合</span> 反应快、喜欢轻松氛围的你。<br><span class='desc-label'>🌟特点</span> 看似机灵，其实内心很重感情。" },
+		{ name: "短耳小兔", emoji: "🐰", desc: "短耳朵的侏儒兔，小小一只超治愈。<br><span class='desc-label'>✨亮点</span> 不张扬但自带萌感，很讨喜。<br><span class='desc-label'>👭适合</span> 低调温柔、有点慢热的你。<br><span class='desc-label'>🌟特点</span> 在熟人面前才会露出活泼的一面。" },
+		{ name: "毛绒考拉", emoji: "🐨", desc: "抱着树干睡觉的考拉，佛系冠军。<br><span class='desc-label'>✨亮点</span> 情绪稳定，不轻易被打乱节奏。<br><span class='desc-label'>👭适合</span> 喜欢悠闲、不爱卷的你。<br><span class='desc-label'>🌟特点</span> 有自己的舒适区，也享受慢生活。" },
+		{ name: "企鹅宝宝", emoji: "🐧", desc: "摇摇摆摆的小企鹅，憨态可掬。<br><span class='desc-label'>✨亮点</span> 团结友爱，很在意身边人。<br><span class='desc-label'>👭适合</span> 重视友情、喜欢结伴的你。<br><span class='desc-label'>🌟特点</span> 外表呆萌，内心很有主见。" },
+		{ name: "小海豹", emoji: "🦭", desc: "圆滚滚的海豹，喜欢晒太阳发呆。<br><span class='desc-label'>✨亮点</span> 天生乐天派，烦恼不隔夜。<br><span class='desc-label'>👭适合</span> 心大、不爱计较的你。<br><span class='desc-label'>🌟特点</span> 懒懒的但很温暖，像小暖炉。" },
+		{ name: "小熊猫", emoji: "🐼", desc: "红棕色的小熊猫，尾巴蓬松。<br><span class='desc-label'>✨亮点</span> 好奇心旺盛，喜欢探索新事物。<br><span class='desc-label'>👭适合</span> 活泼、有冒险精神的你。<br><span class='desc-label'>🌟特点</span> 看起来软萌，其实很有勇气。" },
+		{ name: "北极熊", emoji: "🐻‍❄️", desc: "雪白的大熊，看似高冷实际温柔。<br><span class='desc-label'>✨亮点</span> 气场干净，让人安心。<br><span class='desc-label'>👭适合</span> 独立、有边界感的你。<br><span class='desc-label'>🌟特点</span> 不轻易靠近，但值得信赖。" },
+		{ name: "小羊驼", emoji: "🦙", desc: "毛茸茸的羊驼，呆萌又治愈。<br><span class='desc-label'>✨亮点</span> 不随波逐流，有自己的节奏。<br><span class='desc-label'>👭适合</span> 有点小个性、不喜拘束的你。<br><span class='desc-label'>🌟特点</span> 外表软萌，内心倔强。" },
+		{ name: "小刺猬", emoji: "🦔", desc: "卷成球的刺猬，软肚皮只给信任的人。<br><span class='desc-label'>✨亮点</span> 保护欲强，对在乎的人特别柔软。<br><span class='desc-label'>👭适合</span> 慢热、需要安全感的你。<br><span class='desc-label'>🌟特点</span> 外冷内热，熟了以后超粘人。" },
+		{ name: "小松鼠", emoji: "🐿️", desc: "抱着松果的小松鼠，机灵可爱。<br><span class='desc-label'>✨亮点</span> 行动力强，热爱生活的小细节。<br><span class='desc-label'>👭适合</span> 闲不住、喜欢安排的你。<br><span class='desc-label'>🌟特点</span> 积极又有点小慌张，很真实。" },
+		{ name: "小浣熊", emoji: "🦝", desc: "爱洗东西的小浣熊，好奇心爆棚。<br><span class='desc-label'>✨亮点</span> 观察力强，总有奇思妙想。<br><span class='desc-label'>👭适合</span> 聪明、有点小调皮的你。<br><span class='desc-label'>🌟特点</span> 喜欢探索，但也很恋家。" },
+		{ name: "小柴犬", emoji: "🐕", desc: "眯眯眼的柴犬，笑容治愈一切。<br><span class='desc-label'>✨亮点</span> 忠诚乐观，是开心果。<br><span class='desc-label'>👭适合</span> 开朗、喜欢带给别人快乐的你。<br><span class='desc-label'>🌟特点</span> 有点固执，但超级可靠。" },
+		{ name: "布偶猫", emoji: "🐈", desc: "蓝眼睛的布偶，温柔又黏人。<br><span class='desc-label'>✨亮点</span> 共情力强，懂得照顾人。<br><span class='desc-label'>👭适合</span> 细腻、渴望深度关系的你。<br><span class='desc-label'>🌟特点</span> 需要被爱，也愿意付出爱。" },
+		{ name: "小熊猫(红)", emoji: "🦝", desc: "红熊猫，尾巴蓬松，喜欢爬树。<br><span class='desc-label'>✨亮点</span> 灵活适应力强，随遇而安。<br><span class='desc-label'>👭适合</span> 性格随和、好相处的你。<br><span class='desc-label'>🌟特点</span> 有点小慵懒，但很会找乐子。" },
+		{ name: "小海獭", emoji: "🦦", desc: "海獭搓脸，可爱到犯规。<br><span class='desc-label'>✨亮点</span> 擅长自得其乐，快乐很简单。<br><span class='desc-label'>👭适合</span> 容易满足、喜欢小美好的你。<br><span class='desc-label'>🌟特点</span> 爱干净，注重生活小细节。" },
+		{ name: "小袋鼠", emoji: "🦘", desc: "育儿袋里的小袋鼠，蹦蹦跳跳。<br><span class='desc-label'>✨亮点</span> 充满活力，向前冲的劲头。<br><span class='desc-label'>👭适合</span> 积极向上、有目标的你。<br><span class='desc-label'>🌟特点</span> 偶尔需要被保护，但更多是勇敢。" },
+		{ name: "小象", emoji: "🐘", desc: "象宝宝鼻子卷卷，憨厚老实。<br><span class='desc-label'>✨亮点</span> 记性好，重感情。<br><span class='desc-label'>👭适合</span> 稳重、靠谱的你。<br><span class='desc-label'>🌟特点</span> 温柔又有力量，值得依靠。" },
+		{ name: "小犀牛", emoji: "🦏", desc: "看起来硬核，其实内心柔软的犀牛。<br><span class='desc-label'>✨亮点</span> 有原则，不容易被带偏。<br><span class='desc-label'>👭适合</span> 独立、有主见的你。<br><span class='desc-label'>🌟特点</span> 外表酷酷，熟了会发现很逗。" },
+		{ name: "小长颈鹿", emoji: "🦒", desc: "温柔的长颈鹿，视野高远。<br><span class='desc-label'>✨亮点</span> 眼光长远，不斤斤计较。<br><span class='desc-label'>👭适合</span> 大气、有包容心的你。<br><span class='desc-label'>🌟特点</span> 安静但很有存在感。" },
+		{ name: "小熊猫(浣熊)", emoji: "🐼", desc: "黑白小熊猫，圆滚滚又软萌。<br><span class='desc-label'>✨亮点</span> 和平主义者，讨厌争吵。<br><span class='desc-label'>👭适合</span> 脾气温和、喜欢和谐的你。<br><span class='desc-label'>🌟特点</span> 悠闲度日，不争不抢。" },
+		{ name: "小斑马", emoji: "🦓", desc: "黑白条纹的斑马，独特又可爱。<br><span class='desc-label'>✨亮点</span> 个性鲜明，不怕与众不同。<br><span class='desc-label'>👭适合</span> 有自己风格、不随大流的你。<br><span class='desc-label'>🌟特点</span> 看似酷，其实很暖心。" },
+		{ name: "小羚羊", emoji: "🐐", desc: "轻盈的羚羊，温柔又机敏。<br><span class='desc-label'>✨亮点</span> 反应快，懂得察言观色。<br><span class='desc-label'>👭适合</span> 敏感、善于体谅别人的你。<br><span class='desc-label'>🌟特点</span> 有时想太多，但非常善良。" },
+		{ name: "小豹子", emoji: "🐆", desc: "奶凶奶凶的小豹子，独立又可爱。<br><span class='desc-label'>✨亮点</span> 行动力强，喜欢自己做决定。<br><span class='desc-label'>👭适合</span> 干脆利落、有想法的你。<br><span class='desc-label'>🌟特点</span> 需要空间，但也会撒娇。" },
+		{ name: "小狮子", emoji: "🦁", desc: "毛茸茸的狮崽，阳光自信。<br><span class='desc-label'>✨亮点</span> 自带光芒，能带动气氛。<br><span class='desc-label'>👭适合</span> 热情、有领导力的你。<br><span class='desc-label'>🌟特点</span> 喜欢被夸奖，也会照顾人。" },
+		{ name: "小老虎", emoji: "🐯", desc: "虎头虎脑，活泼好动。<br><span class='desc-label'>✨亮点</span> 勇敢率真，不拐弯抹角。<br><span class='desc-label'>👭适合</span> 直爽、有冲劲的你。<br><span class='desc-label'>🌟特点</span> 精力充沛，偶尔需要休息。" },
+		{ name: "小狼崽", emoji: "🐺", desc: "灰绒绒的小狼，忠诚又聪明。<br><span class='desc-label'>✨亮点</span> 重视家人和朋友，很护短。<br><span class='desc-label'>👭适合</span> 重情重义、有责任感的你。<br><span class='desc-label'>🌟特点</span> 对外人冷淡，对熟人超暖。" },
+		{ name: "小熊猫(黑白)", emoji: "🐼", desc: "圆圆的熊猫，慢生活代言人。<br><span class='desc-label'>✨亮点</span> 不紧不慢，自有节奏。<br><span class='desc-label'>👭适合</span> 喜欢松弛感、讨厌紧绷的你。<br><span class='desc-label'>🌟特点</span> 看起来懒，其实内心通透。" },
+		{ name: "小树懒", emoji: "🦥", desc: "挂在树上的树懒，慢到极致也是可爱。<br><span class='desc-label'>✨亮点</span> 极度松弛，不内耗。<br><span class='desc-label'>👭适合</span> 随性、不爱着急的你。<br><span class='desc-label'>🌟特点</span> 享受当下，快乐很简单。" },
+		{ name: "小海豚", emoji: "🐬", desc: "光滑又聪明的海豚，友好活泼。<br><span class='desc-label'>✨亮点</span> 沟通力强，善解人意。<br><span class='desc-label'>👭适合</span> 开朗、喜欢交流的你。<br><span class='desc-label'>🌟特点</span> 情商高，让人相处很舒服。" },
+		{ name: "小鲸鱼", emoji: "🐋", desc: "圆头圆脑的小鲸鱼，温柔巨大。<br><span class='desc-label'>✨亮点</span> 包容力强，能承载很多情绪。<br><span class='desc-label'>👭适合</span> 内心宽广、喜欢倾听的你。<br><span class='desc-label'>🌟特点</span> 安静但很有安全感。" },
+		{ name: "小企鹅(帝企鹅)", emoji: "🐧", desc: "帝企鹅宝宝，毛茸茸灰扑扑。<br><span class='desc-label'>✨亮点</span> 坚强有毅力，不怕困难。<br><span class='desc-label'>👭适合</span> 有韧性、能坚持的你。<br><span class='desc-label'>🌟特点</span> 外冷内热，责任感强。" },
+		{ name: "小海龟", emoji: "🐢", desc: "慢悠悠的海龟，自带节奏。<br><span class='desc-label'>✨亮点</span> 稳重长寿，看得开。<br><span class='desc-label'>👭适合</span> 佛系、不慌不忙的你。<br><span class='desc-label'>🌟特点</span> 有自己的步调，不容易焦虑。" },
+		{ name: "小螃蟹", emoji: "🦀", desc: "横着走的小螃蟹，有点小倔强。<br><span class='desc-label'>✨亮点</span> 保护壳硬，内心柔软。<br><span class='desc-label'>👭适合</span> 有自我保护意识、慢热的你。<br><span class='desc-label'>🌟特点</span> 熟了以后会露出软萌的一面。" },
+		{ name: "小章鱼", emoji: "🐙", desc: "八爪小章鱼，聪明又灵活。<br><span class='desc-label'>✨亮点</span> 多线程处理，能力强。<br><span class='desc-label'>👭适合</span> 机灵、善于应对变化的你。<br><span class='desc-label'>🌟特点</span> 好奇心重，喜欢新鲜事。" },
+		{ name: "小蜗牛", emoji: "🐌", desc: "背着小房子的蜗牛，慢慢来。<br><span class='desc-label'>✨亮点</span> 享受过程，不急功近利。<br><span class='desc-label'>👭适合</span> 细心、喜欢按自己节奏的你。<br><span class='desc-label'>🌟特点</span> 有自己的小天地，知足常乐。" },
+		{ name: "小蝴蝶", emoji: "🦋", desc: "轻飘飘的蝴蝶，浪漫又自由。<br><span class='desc-label'>✨亮点</span> 审美在线，热爱美好事物。<br><span class='desc-label'>👭适合</span> 浪漫、有艺术气息的你。<br><span class='desc-label'>🌟特点</span> 不喜欢被束缚，需要呼吸感。" },
+		{ name: "小蜜蜂", emoji: "🐝", desc: "毛茸茸的小蜜蜂，勤劳又可爱。<br><span class='desc-label'>✨亮点</span> 自律高效，把生活打理得好。<br><span class='desc-label'>👭适合</span> 认真、有执行力的你。<br><span class='desc-label'>🌟特点</span> 有点小完美主义，但很可靠。" },
+		{ name: "小瓢虫", emoji: "🐞", desc: "圆圆的瓢虫，小巧幸运。<br><span class='desc-label'>✨亮点</span> 乐观积极，总能发现小美好。<br><span class='desc-label'>👭适合</span> 容易开心、简单纯粹的你。<br><span class='desc-label'>🌟特点</span> 不爱复杂，喜欢直来直往。" },
+		{ name: "小蘑菇", emoji: "🍄", desc: "毛绒蘑菇精灵，安静又治愈。<br><span class='desc-label'>✨亮点</span> 想象力丰富，内心有个小世界。<br><span class='desc-label'>👭适合</span> 爱幻想、有点文艺的你。<br><span class='desc-label'>🌟特点</span> 喜欢独处，但也很温暖。" },
+		{ name: "小恐龙", emoji: "🦕", desc: "长脖子小恐龙，憨憨又可爱。<br><span class='desc-label'>✨亮点</span> 不记仇，心很大。<br><span class='desc-label'>👭适合</span> 性格大大咧咧、好相处的你。<br><span class='desc-label'>🌟特点</span> 有点小迷糊，但特别真诚。" },
+		{ name: "小独角兽", emoji: "🦄", desc: "梦幻独角兽，温柔又独特。<br><span class='desc-label'>✨亮点</span> 有梦想，相信美好的事。<br><span class='desc-label'>👭适合</span> 浪漫、有信念感的你。<br><span class='desc-label'>🌟特点</span> 外表软萌，内心坚定。" },
+		{ name: "小飞象", emoji: "🐘", desc: "耳朵大大的小飞象，勇敢又温柔。<br><span class='desc-label'>✨亮点</span> 接受自己的不同，自信可爱。<br><span class='desc-label'>👭适合</span> 有点小特别、不随大流的你。<br><span class='desc-label'>🌟特点</span> 善良但有力量。" },
+		{ name: "小熊猫(灰)", emoji: "🐨", desc: "灰毛小熊猫，安静温柔。<br><span class='desc-label'>✨亮点</span> 脾气超好，很少生气。<br><span class='desc-label'>👭适合</span> 随和、包容度高的你。<br><span class='desc-label'>🌟特点</span> 喜欢和谐氛围，讨厌冲突。" },
+		{ name: "小羊羔", emoji: "🐏", desc: "咩咩叫的小羊羔，软糯可爱。<br><span class='desc-label'>✨亮点</span> 单纯善良，容易相信别人。<br><span class='desc-label'>👭适合</span> 天真、心软的你。<br><span class='desc-label'>🌟特点</span> 需要被保护，也会温柔待人。" }
+	  ];
+
+	  // 确保50个动物 (上面已50个，检查一下)
+	  // 如果不够50，可以手动补，但上面已50个，没问题。
+
+	  // ---------- 状态管理 ----------
+	  let currentQuestionIndex = 0; // 0~14
+	  let userAnswers = new Array(15).fill(null); // 存储每个题目选择的选项索引 (0-3) 
+	  let selectedOptionIndex = null; // 当前题目选中的选项
+
+	  // DOM 元素
+	  const introText = document.getElementById('introText');
+	  const quizArea = document.getElementById('quizArea');
+	  const resultArea = document.getElementById('resultArea');
+	  const qIndexDisplay = document.getElementById('qIndexDisplay');
+	  const questionText = document.getElementById('questionText');
+	  const optionsList = document.getElementById('optionsList');
+	  const nextBtn = document.getElementById('nextBtn');
+	  const animalEmoji = document.getElementById('animalEmoji');
+	  const animalName = document.getElementById('animalName');
+	  const animalDesc = document.getElementById('animalDesc');
+	  const retestBtn = document.getElementById('retestBtn');
+
+	  // ---------- 渲染题目 ----------
+	  function renderQuestion() {
+		// 更新题号
+		qIndexDisplay.textContent = `${currentQuestionIndex + 1} / 15`;
+
+		const q = questions[currentQuestionIndex];
+		questionText.textContent = q.text;
+
+		// 生成选项按钮
+		optionsList.innerHTML = '';
+		q.options.forEach((opt, idx) => {
+		  const btn = document.createElement('button');
+		  btn.classList.add('option-btn');
+		  // 如果该题已经选过，回显选中状态
+		  if (userAnswers[currentQuestionIndex] === idx) {
+			btn.classList.add('selected');
+		  }
+		  btn.innerHTML = `<span class="option-dot"></span><span>${opt}</span>`;
+		  btn.dataset.optIndex = idx;
+		  btn.addEventListener('click', () => selectOption(idx, btn));
+		  optionsList.appendChild(btn);
+		});
+
+		// 恢复当前题目之前选中的选项状态
+		const prevSelected = userAnswers[currentQuestionIndex];
+		if (prevSelected !== null) {
+		  const allBtns = optionsList.querySelectorAll('.option-btn');
+		  allBtns.forEach((btn, idx) => {
+			if (idx === prevSelected) btn.classList.add('selected');
+			else btn.classList.remove('selected');
+		  });
+		  selectedOptionIndex = prevSelected;
+		  nextBtn.disabled = false;
+		} else {
+		  selectedOptionIndex = null;
+		  nextBtn.disabled = true;
+		}
+
+		// 如果是最后一题，按钮文字变一下
+		if (currentQuestionIndex === 14) {
+		  nextBtn.textContent = '查看结果 ✨';
+		} else {
+		  nextBtn.textContent = '下一题 →';
+		}
+	  }
+
+	  // 选择选项
+	  function selectOption(optIndex, btnElement) {
+		// 取消同组其他选中
+		const allBtns = optionsList.querySelectorAll('.option-btn');
+		allBtns.forEach(btn => btn.classList.remove('selected'));
+		btnElement.classList.add('selected');
+		selectedOptionIndex = optIndex;
+		userAnswers[currentQuestionIndex] = optIndex;
+		nextBtn.disabled = false;
+	  }
+
+	  // 下一题 / 查看结果
+	  function goToNext() {
+		if (selectedOptionIndex === null) return; // 不可点击的情况
+
+		// 保存答案 (已在selectOption中保存, 但再次确认)
+		userAnswers[currentQuestionIndex] = selectedOptionIndex;
+
+		if (currentQuestionIndex < 14) {
+		  // 还有下一题
+		  currentQuestionIndex++;
+		  renderQuestion();
+		} else {
+		  // 已经是最后一题，计算结果
+		  showResult();
+		}
+	  }
+
+	  // ---------- 计算结果 ----------
+	  function computeAnimalIndex() {
+		// 使用每个选项的质数权重累加
+		let sum = 0;
+		for (let i = 0; i < 15; i++) {
+		  const optIdx = userAnswers[i];
+		  if (optIdx === null) continue; // 理论上不会
+		  const prime = questionOptionPrimes[i][optIdx];
+		  sum += prime;
+		}
+		// 取模50，获得动物索引
+		return sum % 50;
+	  }
+
+	  // 显示结果
+	  function showResult() {
+		// 隐藏答题区域，隐藏导语，显示结果
+		quizArea.classList.add('hidden');
+		introText.classList.add('hidden');
+		resultArea.classList.add('active');
+
+		// 计算动物
+		const index = computeAnimalIndex();
+		const animal = animals[index];
+
+		// 填充结果
+		animalEmoji.textContent = animal.emoji;
+		animalName.textContent = animal.name;
+		animalDesc.innerHTML = animal.desc;
+
+		// 滚动到顶部，让用户看到结果 (可选)
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	  }
+
+	  // ---------- 重置测试 ----------
+	  function resetTest() {
+		// 重置状态
+		currentQuestionIndex = 0;
+		userAnswers = new Array(15).fill(null);
+		selectedOptionIndex = null;
+
+		// 显示答题区，隐藏结果区，显示导语
+		quizArea.classList.remove('hidden');
+		resultArea.classList.remove('active');
+		introText.classList.remove('hidden');
+
+		// 重新渲染第一题
+		renderQuestion();
+
+		// 滚动到顶部
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	  }
+
+	  // ---------- 事件绑定 ----------
+	  nextBtn.addEventListener('click', goToNext);
+	  retestBtn.addEventListener('click', resetTest);
+
+	  // 初始化
+	  function init() {
+		// 初始状态：显示导语和答题区，隐藏结果区
+		introText.classList.remove('hidden');
+		quizArea.classList.remove('hidden');
+		resultArea.classList.remove('active');
+
+		// 渲染第一题
+		currentQuestionIndex = 0;
+		userAnswers = new Array(15).fill(null);
+		renderQuestion();
+
+		// 保证按钮是禁用状态 (如果之前有启用)
+		nextBtn.disabled = true;
+	  }
+
+	  init();
+
+	  // 额外：如果用户想点击已选中的选项取消？不需要，再次点击保持选中即可。
+	  // 但可允许用户改答案，已实现。
+	})();
+  </script>
+</body>
+</html>
+```
